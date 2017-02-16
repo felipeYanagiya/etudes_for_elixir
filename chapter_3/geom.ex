@@ -5,9 +5,10 @@ defmodule Geom do
   """
   def area(which, a, b) do
     case which do
-      :rectangle -> a * b
-      :triangle -> a * b / 2
-      :ellipse -> :math.pi * a * b
+      :rectangle when a > 0 and b > 0 -> a * b
+      :triangle when a > 0 and b > 0 -> a * b / 2
+      :ellipse when a > 0 and b > 0 -> :math.pi * a * b
+      _ -> 0
     end
   end
 
