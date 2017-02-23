@@ -1,9 +1,9 @@
 defmodule Country do
-  defstruct [cities, name, language]
+  defstruct [:cities, :name, :language]
 end
 
 defmodule City do
-  defstruct [name, population, latitude, longitude]
+  defstruct [:name, :population, :latitude, :longitude]
 end
 
 defmodule Geography do
@@ -12,31 +12,43 @@ defmodule Geography do
     Kernel.length(list) == 2
   end
 
-  defp construct_city(list) do
-    {name, _rest} = List.pop_at(list, 0)
-    {pop, _rest} = List.pop_at(list, 1)
-    {lat, _rest} = List.pop_at(list, 2)
-    {long, _rest} = List.pop_at(list, 3)
+  defp extract_city(city) do
+    {name, _rest} = List.pop_at(city, 0)
+    {pop, _rest} = List.pop_at(city, 1)
+    {lat, _rest} = List.pop_at(city, 2)
+    {long, _rest} = List.pop_at(city, 3)
 
-    %City{name: name, population: pop, longitude: long, latitude: lat}
+     %City{name: name, population: pop, longitude: long, latitude: lat}
   end
 
-  defp extract_data(line) do
-    list = String.replace(line, "\n", "")
+  defp construct_city([country | others], city) do
+    [%{ country | cities: [extract_city(city) | country.cities]} | others]
+  end
+
+  defp extract_line(line) do
+    String.replace(line, "\n", "")
       |> String.split(",")
+  end
+
+  defp extract_data(line, result) do
+    location_list = extract_line(line)
 
     cond do
-      is_country(list) -> %Country{hd(list), List.flatten(tl(list))}
-      true -> construct_city(list)
+      is_country(location_list) ->
+        [ %Country{
+            name: hd(location_list),
+            language: hd(tl(location_list)),
+            cities: []} | result ]
+      true -> construct_city(result, location_list)
     end
   end
 
-  defp read_all_lines(file, list) do
+  defp read_all_lines(file, result) do
     line = IO.read(file, :line)
 
     cond do
-      line == :eof -> list
-      true -> read_all_lines(file, append_to_list(extract_data(line), map))
+      line == :eof -> result
+      true -> read_all_lines(file, extract_data(line, result))
     end
   end
 
