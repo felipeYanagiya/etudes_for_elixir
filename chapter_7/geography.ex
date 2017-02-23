@@ -6,6 +6,24 @@ defmodule City do
   defstruct [:name, :population, :latitude, :longitude]
 end
 
+defprotocol Valid do
+  @doc "Returns true if data is considered valid"
+  def valid?(data)
+end
+
+defimpl Valid, for: City do
+  def valid?(city) do
+    city.population >= 0 and city.latitude >= -90 and city.latitude <= 90
+      and city.longitude >= -180 and city.longitude <= 180
+  end
+end
+
+defimpl Inspect, for: City do
+  def inspect(city, args) do
+    "#{city.name} #{city.population} #{city.latitude}°N #{city.longitude}°W"
+  end
+end
+
 defmodule Geography do
 
   defp is_country(list) do
@@ -18,7 +36,7 @@ defmodule Geography do
     {lat, _rest} = List.pop_at(city, 2)
     {long, _rest} = List.pop_at(city, 3)
 
-     %City{name: name, population: pop, longitude: long, latitude: lat}
+     %City{name: name, population: String.to_integer(pop), longitude: String.to_float(long), latitude: String.to_float(lat)}
   end
 
   defp construct_city([country | others], city) do
@@ -62,6 +80,6 @@ defmodule Geography do
     Enum.filter(glist, fn cty -> cty.language == language end)
       |> Enum.map(fn country -> country.cities end)
       |> List.flatten
-      |> Enum.reduce(0, fn (city, acc) -> String.to_integer(city.population) + acc end)
+      |> Enum.reduce(0, fn (city, acc) -> city.population + acc end)
   end
 end
