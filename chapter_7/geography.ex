@@ -57,4 +57,11 @@ defmodule Geography do
     { _result, file } = File.open(file, [:read, :utf8])
     read_all_lines(file, [])
   end
+
+  def total_population(glist, language) do
+    Enum.filter(glist, fn cty -> cty.language == language end)
+      |> Enum.map(fn country -> country.cities end)
+      |> List.flatten
+      |> Enum.reduce(0, fn (city, acc) -> String.to_integer(city.population) + acc end)
+  end
 end
